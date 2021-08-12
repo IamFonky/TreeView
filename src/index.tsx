@@ -1,10 +1,5 @@
-import { render } from "react-dom";
+import { TreeView } from "./TreeView";
+import { TreeNode } from "./TreeNode";
+import * as utils from "./helpers";
 
-import Test from "./Test";
-
-const rootElement = document.getElementById("root");
-render(<Test />, rootElement);
-
-export { TreeView } from "./TreeView";
-export { TreeNode } from "./TreeNode";
-export * from "./helpers";
+export default { TreeNode, TreeView, utils };

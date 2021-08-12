@@ -8,8 +8,17 @@ const MINIMUM_NODE_LABEL_HEIGHT = 30;
 const MINIMUM_NODE_LABEL_WIDTH = 100;
 const KEEP_OPEN_ON_DRAG = false;
 const OPEN_CLOSE_BUTTONS = {
-  open: "v",
-  close: ">"
+  open: "▾",
+  close: "▸"
+};
+const DESIGN_SETTINGS = {
+  hoverBorderColor: "#aaa",
+  hoverBorderwidth: 1,
+  dragUpOrDownColor: "#000",
+  dragUpOrDownLineWidth: 4,
+  dragOverColor: "#000",
+  dragOverBorderWidth: 2,
+  selectedColor: "rgba(100, 100, 100, 0.1)"
 };
 
 interface TreeViewContextParameters {
@@ -21,6 +30,16 @@ interface TreeViewContextParameters {
     open: React.ReactNode;
     close: React.ReactNode;
   };
+  designParams: {
+    hoverBorderColor: string;
+    hoverBorderwidth: number;
+    dragUpOrDownColor: string;
+    dragUpOrDownLineWidth: number;
+    dragOverColor: string;
+    dragOverBorderWidth: number;
+    selectedColor: string;
+  };
+  openOnDrag: null | number;
 }
 
 type OnMoveFn<T = unknown> = (
@@ -44,6 +63,8 @@ export const treeviewCTX = React.createContext<TreeViewContext>({
   dropZoneSplittingSize: MINIMUM_NODE_LABEL_HEIGHT / 3,
   keepOpenOnDrag: KEEP_OPEN_ON_DRAG,
   openCloseButtons: OPEN_CLOSE_BUTTONS,
+  designParams: DESIGN_SETTINGS,
+  openOnDrag: null,
   openNodes: {},
   toggleNode: () => {},
   onMove: () => {}
@@ -73,7 +94,9 @@ export function TreeView<T = unknown>({
     minimumLabelHeight = MINIMUM_NODE_LABEL_HEIGHT,
     minimumLabelWidth = MINIMUM_NODE_LABEL_WIDTH,
     keepOpenOnDrag = KEEP_OPEN_ON_DRAG,
-    openCloseButtons = OPEN_CLOSE_BUTTONS
+    openCloseButtons = OPEN_CLOSE_BUTTONS,
+    designParams = DESIGN_SETTINGS,
+    openOnDrag = null
   } = parameters || {};
 
   const { openNodes, onOpenNode } = nodeManagement || {};
@@ -94,6 +117,8 @@ export function TreeView<T = unknown>({
         dropZoneSplittingSize,
         keepOpenOnDrag,
         openCloseButtons,
+        designParams,
+        openOnDrag,
         openNodes: openNodes || openNodesState,
         toggleNode: (id: string) => {
           if (openNodes != null && onOpenNode != null) {

@@ -4,9 +4,22 @@ import { css, cx } from "@emotion/css";
 import { dragOverStyle, DragOverType, TreeChildren } from "./TreeChildren";
 import { treeviewCTX } from "./TreeView";
 
-const dragUpStyle = css({
-  borderTop: "solid 2px blue",
-  marginTop: "-2px"
+export const nodeStyle = css({
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  cursor: "pointer",
+  textAlign: "left",
+  width: "100%",
+  paddingLeft: "5px"
+});
+
+const folderStyle = css({
+  fontWeight: "bold"
+});
+
+const selectedNodeStyle = css({
+  backgroundColor: "#aaa"
 });
 
 export interface TreeNodePassedProps<T = unknown> {
@@ -31,6 +44,7 @@ export function TreeNode<T = unknown>({
   className,
   id
 }: React.PropsWithChildren<TreeNodeProps<T>>) {
+  const oppeningTimer = React.useRef<number | null>(null);
   const [dragging, setDragging] = React.useState(false);
   const [dragOverState, setDragOverState] = React.useState<DragOverType>();
 
@@ -40,6 +54,7 @@ export function TreeNode<T = unknown>({
     minimumLabelHeight,
     keepOpenOnDrag,
     openCloseButtons,
+    designParams,
     openNodes,
     toggleNode,
     onMove
@@ -47,6 +62,24 @@ export function TreeNode<T = unknown>({
 
   const { parentData = null, parentId, path = [] } = passedProps || {};
   const open = openNodes[id];
+
+  const dragUpStyle = css({
+    borderTop:
+      "solid " +
+      designParams.dragUpOrDownLineWidth +
+      "px " +
+      designParams.dragUpOrDownColor,
+    marginTop: "-" + designParams.dragUpOrDownLineWidth + "px"
+  });
+
+  const dragOverStyle = css({
+    border:
+      "solid " +
+      designParams.dragOverBorderWidth +
+      "px " +
+      designParams.dragOverColor,
+    margin: "-" + designParams.dragOverBorderWidth + "px"
+  });
 
   return (
     <div
@@ -65,15 +98,25 @@ export function TreeNode<T = unknown>({
       <div
         draggable
         style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
           minHeight: minimumLabelHeight
         }}
-        className={cx({
-          [dragOverStyle]: dragOverState === "IN" || dragOverState === "DOWN",
-          [dragUpStyle]: dragOverState === "UP"
-        })}
+        className={cx(
+          nodeStyle,
+          css({
+            "&:hover": {
+              outline:
+                "solid " +
+                designParams.hoverBorderwidth +
+                "px " +
+                designParams.hoverBorderColor
+            }
+          }),
+          {
+            [dragOverStyle]: dragOverState === "IN" || dragOverState === "DOWN",
+            [dragUpStyle]: dragOverState === "UP",
+            [folderStyle]: children != null
+          }
+        )}
         onDragStart={(e) => {
           e.dataTransfer.setData("path", JSON.stringify(path));
           e.dataTransfer.setData("id", id);
@@ -93,6 +136,16 @@ export function TreeNode<T = unknown>({
             ) {
               setDragOverState("IN");
               e.preventDefault();
+              if (oppeningTimer.current != null) {
+                clearTimeout(oppeningTimer.current);
+              }
+              oppeningTimer.current = setTimeout(() => {
+                if (dragOverState === "IN") {
+                  if (!open) {
+                    toggleNode(id);
+                  }
+                }
+              }, 500);
             } else {
               setDragOverState(undefined);
             }
@@ -133,7 +186,7 @@ export function TreeNode<T = unknown>({
       >
         {children != null && (
           <div
-            style={{ cursor: "pointer", width: marginWidth }}
+            style={{ cursor: "pointer", width: marginWidth, textAlign: "left" }}
             onClick={() => toggleNode(id)}
           >
             {open ? openCloseButtons.open : openCloseButtons.close}

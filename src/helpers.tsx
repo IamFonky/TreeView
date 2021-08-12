@@ -1,7 +1,17 @@
+import { css, cx } from "@emotion/css";
 import * as React from "react";
 import { TreeNode } from "./TreeNode";
+import { TreeNodeStructure } from "./types";
 
 export function structureToJSX(node: TreeNodeStructure) {
+  return (
+    <TreeNode key={node.id} id={node.id} label={node.label} data={node}>
+      {node.items && node.items.map((item) => structureToJSX(item))}
+    </TreeNode>
+  );
+}
+
+export function structureTextToJSX(node: TreeNodeStructure) {
   return (
     <TreeNode key={node.id} id={node.id} label={node.label} data={node}>
       {node.items && node.items.map((item) => structureToJSX(item))}
@@ -74,7 +84,7 @@ export function removeNode(
   fromIndex = fromPath[depth];
   toIndex = toPath[depth];
 
-  if (fromIndex >= toIndex) {
+  if (fromPath.length >= toPath.length && fromIndex >= toIndex) {
     computedFromPath[depth] += 1;
   }
   const indexToDelete = computedFromPath.slice(-1)[0];
@@ -83,4 +93,47 @@ export function removeNode(
   if (parentToMove.items != null && indexToDelete != null) {
     parentToMove.items.splice(indexToDelete, 1);
   }
+}
+
+const ellipsisTextStyle = css({
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+  margin: 0
+});
+
+const labelWithIconStyle = css({
+  display: "flex",
+  alignItems: "center",
+  flexDirection: "row",
+  width: "100%",
+  overflow: "hidden",
+  "img, svg": {
+    marginRight: "5px"
+  }
+});
+
+interface LabelWithIconProps {
+  icon?: React.ReactNode;
+  label: string;
+  style?: React.CSSProperties;
+  className?: string;
+}
+
+export function LabelWithIcon({
+  icon,
+  label,
+  style,
+  className
+}: LabelWithIconProps) {
+  return (
+    <div
+      className={cx(labelWithIconStyle, className ? className : "")}
+      //style={style ? style : undefined}
+    >
+      {icon && icon}
+      <p className={ellipsisTextStyle}>{label}</p>
+    </div>
+  );
 }

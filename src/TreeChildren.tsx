@@ -3,14 +3,14 @@ import * as React from "react";
 import { TreeNode, TreeNodePassedProps } from "./TreeNode";
 import { treeviewCTX } from "./TreeView";
 
-export const dragOverStyle = css({
-  border: "solid 2px blue",
-  margin: "-2px"
-});
-
-const dragDownStyle = css({
-  borderBottom: "solid 2px blue",
-  marginBottom: "-2px"
+const emptyStyle = css({
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  cursor: "default",
+  paddingLeft: "5px",
+  textAlign: "left",
+  color: "#bbb"
 });
 
 export type DragOverType = "UP" | "IN" | "DOWN" | "EMPTY" | undefined;
@@ -33,19 +33,36 @@ export function TreeChildren<T = unknown>({
 }: React.PropsWithChildren<TreeChildrenProps<T>>) {
   const {
     marginWidth,
+    minimumLabelHeight,
     dropZoneSplittingSize,
-    openNodes,
+    designParams,
     onMove
   } = React.useContext(treeviewCTX);
 
   const childrenLength = React.Children.count(children);
+  const dragDownStyle = css({
+    borderBottom:
+      "solid " +
+      designParams.dragUpOrDownLineWidth +
+      "px " +
+      designParams.dragUpOrDownColor,
+    marginBottom: "-" + designParams.dragUpOrDownLineWidth + "px"
+  });
+  const dragOverStyle = css({
+    border:
+      "solid " +
+      designParams.dragOverBorderWidth +
+      "px " +
+      designParams.dragOverColor,
+    margin: "-" + designParams.dragOverBorderWidth + "px"
+  });
+
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        marginLeft: marginWidth,
-        backgroundColor: "rgba(100,100,100,0.1)"
+        marginLeft: marginWidth
       }}
       className={cx({
         [dragDownStyle]: dragOverState === "DOWN"
@@ -89,8 +106,8 @@ export function TreeChildren<T = unknown>({
     >
       {children != null && childrenLength === 0 ? (
         <div
-          style={{ display: "flex", flexDirection: "row" }}
-          className={cx({
+          style={{ height: minimumLabelHeight }}
+          className={cx(emptyStyle, {
             [dragOverStyle]: dragOverState === "EMPTY"
           })}
           onDragOver={(e) => {
